@@ -1,0 +1,82 @@
+<div class="app-container">
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="azure-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M11.5 2L2 19h7l2.5-4.5h3L17 19h5L12.5 2h-1z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Autonomous .NET Incident Remediation Agent</h1>
+        <p class="subtitle">Autonomous AI-powered error log diagnosis & database root cause analysis</p>
+      </div>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      Agent Operational
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="card shadow-card">
+      <div class="card-header">
+        <h2>Submit Incident Error Log</h2>
+        <p class="card-desc">Enter an exception type or raw stack trace log to trigger autonomous database investigation and AI resolution.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="errorInput">Error Log / Exception Type</label>
+        <textarea
+          id="errorInput"
+          class="form-control"
+          rows="4"
+          placeholder="e.g. System.NullReferenceException"
+          [(ngModel)]="errorInput"
+          [disabled]="isLoading">
+        </textarea>
+      </div>
+
+      <div class="action-bar">
+        <button
+          class="btn btn-primary"
+          (click)="runDiagnostic()"
+          [disabled]="isLoading || !errorInput.trim()">
+          <span *ngIf="!isLoading">
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Run Autonomous Diagnostic
+          </span>
+          <span *ngIf="isLoading" class="loading-state">
+            <span class="spinner"></span>
+            Executing Agentic Investigation...
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Indicator Card -->
+    <div *ngIf="isLoading" class="card loading-card">
+      <div class="loading-content">
+        <div class="pulse-ring"></div>
+        <h3>Analyzing Error & Querying SQL Database...</h3>
+        <p>The AI Agent is parsing the log, querying <code>ErrorLogs</code> table, and compiling RCA report.</p>
+      </div>
+    </div>
+
+    <!-- Output Result Card -->
+    <div *ngIf="result && !isLoading" class="card result-card">
+      <div class="result-header">
+        <div class="result-title">
+          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3>Diagnostic Analysis & Remediation Plan</h3>
+        </div>
+      </div>
+      <div class="result-body">
+        <pre class="result-text">{{ result }}</pre>
+      </div>
+    </div>
+  </main>
+</div>

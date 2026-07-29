@@ -1,0 +1,32 @@
+# .NET / C# Build Artifacts
+**/bin/
+**/obj/
+**/.vs/
+**/[Dd]ebug/
+**/[Rr]elease/
+**/logs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Angular / Node.js
+**/node_modules/
+**/dist/
+**/.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.tmp/
+
+# IDE & OS Files
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.DS_Store
+Thumbs.db
+
+# Legacy empty directory
+IncidentAgent.API/
