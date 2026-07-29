@@ -54,7 +54,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpClient<IAgentService, GeminiAgentService>();
 builder.Services.AddScoped<DatabaseTool>();
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantService, TenantService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

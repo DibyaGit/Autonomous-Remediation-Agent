@@ -13,4 +13,9 @@ export class DiagnosticService {
   diagnoseError(errorLog: string): Observable<string> {
     return this.http.post(this.apiUrl, { errorLog }, { responseType: 'text' });
   }
+
+  executeFix(sqlScript: string): Observable<string> {
+    const executeUrl = this.apiUrl.replace('/diagnose', '/execute-fix');
+    return this.http.post(executeUrl, { sqlScript }, { responseType: 'text' });
+  }
 }

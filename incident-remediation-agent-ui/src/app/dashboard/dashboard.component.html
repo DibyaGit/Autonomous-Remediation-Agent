@@ -8,12 +8,12 @@
       </div>
       <div>
         <h1>Autonomous .NET Incident Remediation Agent</h1>
-        <p class="subtitle">Autonomous AI-powered error log diagnosis & database root cause analysis</p>
+        <p class="subtitle">Multi-Tenant AI Remediation with Human-in-the-Loop Verification (Header: X-Tenant-ID: client-wipro)</p>
       </div>
     </div>
     <div class="status-badge">
       <span class="status-dot"></span>
-      Agent Operational
+      Tenant: client-wipro
     </div>
   </header>
 
@@ -21,7 +21,7 @@
     <div class="card shadow-card">
       <div class="card-header">
         <h2>Submit Incident Error Log</h2>
-        <p class="card-desc">Enter an exception type or raw stack trace log to trigger autonomous database investigation and AI resolution.</p>
+        <p class="card-desc">Enter an exception type or stack trace to trigger multi-tenant AI analysis and T-SQL script generation.</p>
       </div>
 
       <div class="form-group">
@@ -29,10 +29,10 @@
         <textarea
           id="errorInput"
           class="form-control"
-          rows="4"
+          rows="3"
           placeholder="e.g. System.NullReferenceException"
           [(ngModel)]="errorInput"
-          [disabled]="isLoading">
+          [disabled]="isLoading || isExecuting">
         </textarea>
       </div>
 
@@ -40,7 +40,7 @@
         <button
           class="btn btn-primary"
           (click)="runDiagnostic()"
-          [disabled]="isLoading || !errorInput.trim()">
+          [disabled]="isLoading || isExecuting || !errorInput.trim()">
           <span *ngIf="!isLoading">
             <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -49,9 +49,16 @@
           </span>
           <span *ngIf="isLoading" class="loading-state">
             <span class="spinner"></span>
-            Executing Agentic Investigation...
+            Executing AI Diagnosis...
           </span>
         </button>
+      </div>
+    </div>
+
+    <!-- Status Alert Banner -->
+    <div *ngIf="executionStatus" class="alert-banner" [ngClass]="{'alert-success': executionStatus.includes('SUCCESS'), 'alert-info': executionStatus.includes('rejected'), 'alert-danger': executionStatus.includes('FAILED')}">
+      <div class="alert-content">
+        <span>{{ executionStatus }}</span>
       </div>
     </div>
 
@@ -59,23 +66,63 @@
     <div *ngIf="isLoading" class="card loading-card">
       <div class="loading-content">
         <div class="pulse-ring"></div>
-        <h3>Analyzing Error & Querying SQL Database...</h3>
-        <p>The AI Agent is parsing the log, querying <code>ErrorLogs</code> table, and compiling RCA report.</p>
+        <h3>Generating T-SQL Remediation Script...</h3>
+        <p>AI Agent is analyzing tenant error logs and applying safety guardrails.</p>
       </div>
     </div>
 
-    <!-- Output Result Card -->
-    <div *ngIf="result && !isLoading" class="card result-card">
-      <div class="result-header">
-        <div class="result-title">
-          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <!-- Human-in-the-Loop Review Safety Checkpoint -->
+    <div *ngIf="result && !isLoading" class="card review-card">
+      <div class="review-header">
+        <div class="review-title">
+          <svg class="shield-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
-          <h3>Diagnostic Analysis & Remediation Plan</h3>
+          <div>
+            <h3>Human-in-the-Loop Verification Checkpoint</h3>
+            <p class="checkpoint-sub">Review AI-generated T-SQL script before database execution.</p>
+          </div>
         </div>
+        <span class="guardrail-badge">AI Guardrails Active</span>
       </div>
-      <div class="result-body">
-        <pre class="result-text">{{ result }}</pre>
+
+      <div class="form-group">
+        <label for="reviewScript">Generated T-SQL Script (Read-Only Review)</label>
+        <textarea
+          id="reviewScript"
+          class="form-control code-review-area"
+          rows="10"
+          readonly
+          [value]="result">
+        </textarea>
+      </div>
+
+      <div class="review-actions">
+        <button
+          class="btn btn-reject"
+          (click)="rejectScript()"
+          [disabled]="isExecuting">
+          <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Reject Script
+        </button>
+
+        <button
+          class="btn btn-approve"
+          (click)="approveAndExecuteFix()"
+          [disabled]="isExecuting">
+          <span *ngIf="!isExecuting">
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Approve & Execute Fix
+          </span>
+          <span *ngIf="isExecuting" class="loading-state">
+            <span class="spinner"></span>
+            Executing on Tenant DB...
+          </span>
+        </button>
       </div>
     </div>
   </main>

@@ -5,26 +5,27 @@ using Microsoft.Data.SqlClient;
 
 public class DatabaseTool
 {
-    private readonly string _connectionString;
+    private readonly ITenantService _tenantService;
 
-    public DatabaseTool(IConfiguration configuration)
+    public DatabaseTool(ITenantService tenantService)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") 
-            ?? configuration["ConnectionStrings:DefaultConnection"] 
-            ?? string.Empty;
+        _tenantService = tenantService;
     }
+
+    private string ConnectionString => _tenantService.GetConnectionString();
 
     public async Task<string> GetErrorLogDetailsAsync(string errorType)
     {
-        if (string.IsNullOrWhiteSpace(_connectionString))
+        var connStr = ConnectionString;
+        if (string.IsNullOrWhiteSpace(connStr))
         {
-            return "Connection string 'DefaultConnection' is not configured.";
+            return "Connection string is not configured for the active tenant.";
         }
 
         // Strict SQL Parameterization: No string concatenation (+) or interpolation ($) used
         const string query = "SELECT TOP 1 Message, StackTrace FROM ErrorLogs WHERE ErrorType = @errorType";
 
-        using var connection = new SqlConnection(_connectionString);
+        using var connection = new SqlConnection(connStr);
         using var command = new SqlCommand(query, connection);
         
         // Explicitly typed parameter to guarantee protection against SQL injection
