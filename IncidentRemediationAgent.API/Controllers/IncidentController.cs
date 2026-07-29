@@ -91,6 +91,52 @@ public class IncidentController : ControllerBase
 
     private static string GetFallbackRemediationReport(string errorLog)
     {
+        if (string.IsNullOrWhiteSpace(errorLog))
+        {
+            return "-- No error log provided";
+        }
+
+        var lower = errorLog.ToLowerInvariant();
+
+        // 1. Missing Column Error (e.g. "Invalid column name 'Department'", "Missing column")
+        if (lower.Contains("column") || lower.Contains("field") || lower.Contains("attribute"))
+        {
+            string columnName = "Department";
+            if (errorLog.Contains("'"))
+            {
+                var parts = errorLog.Split('\'');
+                if (parts.Length >= 2 && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    columnName = parts[1].Trim();
+                }
+            }
+
+            return $@"IF NOT EXISTS (
+    SELECT * FROM sys.columns 
+    WHERE object_id = OBJECT_ID(N'[dbo].[EmployeeRecords]') 
+    AND name = '{columnName}'
+)
+BEGIN
+    ALTER TABLE dbo.EmployeeRecords 
+    ADD {columnName} NVARCHAR(100) NULL;
+END";
+        }
+
+        // 2. Performance / Index / Timeout Error (e.g. "Timeout", "Deadlock", "Index")
+        if (lower.Contains("timeout") || lower.Contains("deadlock") || lower.Contains("index") || lower.Contains("performance"))
+        {
+            return $@"IF NOT EXISTS (
+    SELECT * FROM sys.indexes 
+    WHERE name = N'IX_EmployeeRecords_Status' 
+    AND object_id = OBJECT_ID(N'[dbo].[EmployeeRecords]')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_EmployeeRecords_Status 
+    ON dbo.EmployeeRecords (Status, CreatedAt DESC);
+END";
+        }
+
+        // 3. Default / Missing Table Error (e.g. "System.NullReferenceException", "Invalid object name")
         return $@"IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[EmployeeRecords]') AND type in (N'U'))
 BEGIN
     CREATE TABLE dbo.EmployeeRecords (

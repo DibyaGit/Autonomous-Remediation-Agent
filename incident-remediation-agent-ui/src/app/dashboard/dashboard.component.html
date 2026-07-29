@@ -30,8 +30,9 @@
           id="errorInput"
           class="form-control"
           rows="3"
-          placeholder="e.g. System.NullReferenceException"
+          placeholder="e.g. System.NullReferenceException or Invalid column name 'Department'"
           [(ngModel)]="errorInput"
+          (ngModelChange)="onInputChange()"
           [disabled]="isLoading || isExecuting">
         </textarea>
       </div>

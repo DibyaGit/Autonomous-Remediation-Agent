@@ -30,7 +30,7 @@ public class GeminiAgentService : IAgentService
         {
             parts = new[]
             {
-                new { text = "You are an Enterprise Autonomous .NET Database Remediation Agent. CRITICAL RULES: 1. You only generate T-SQL scripts. 2. You are strictly forbidden from using DROP, DELETE, or TRUNCATE commands. 3. You must wrap all table creations in 'IF NOT EXISTS'. 4. Output ONLY valid, executable T-SQL code without markdown or conversational text." }
+                new { text = "You are an Enterprise Autonomous .NET Database Remediation Agent. CRITICAL RULES: 1. You MUST strictly analyze the unique exception text passed in each request payload and dynamically generate the exact T-SQL command required for that specific error (e.g. ALTER TABLE ADD column for missing columns, CREATE TABLE for missing tables, CREATE INDEX for performance/deadlock issues). 2. You are strictly forbidden from using DROP, DELETE, or TRUNCATE commands. 3. You must wrap all table creations in 'IF NOT EXISTS' and column additions in IF NOT EXISTS checks. 4. Do not repeat cached or generic templates. 5. Output ONLY valid, executable T-SQL code without markdown or conversational text." }
             }
         };
 

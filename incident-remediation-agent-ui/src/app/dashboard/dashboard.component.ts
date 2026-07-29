@@ -19,17 +19,29 @@ export class DashboardComponent {
 
   private diagnosticService = inject(DiagnosticService);
 
+  onInputChange(): void {
+    // Clear stale status messages when user enters a new query
+    if (this.executionStatus) {
+      this.executionStatus = '';
+    }
+  }
+
   runDiagnostic(): void {
     if (!this.errorInput || this.errorInput.trim() === '') {
       this.result = 'Please enter a valid exception type.';
+      this.executionStatus = '';
       return;
     }
 
+    // WIPE PREVIOUS STATE CLEAN
     this.isLoading = true;
+    this.isExecuting = false;
     this.result = '';
     this.executionStatus = '';
 
-    this.diagnosticService.diagnoseError(this.errorInput).subscribe({
+    const payload = this.errorInput.trim();
+
+    this.diagnosticService.diagnoseError(payload).subscribe({
       next: (res) => {
         this.result = res;
         this.isLoading = false;
